@@ -85,7 +85,7 @@ def get_required_information(release):
 
 
 def get_full_data(release_id):
-    sleep(1.1)
+    sleep(1.5)
     params = {
         'token': TOKEN
     }
@@ -95,7 +95,6 @@ def get_full_data(release_id):
 
     # Verify response
     if 'message' in response:
-        print(release_id)
         print(response['message'])
     else:
         release = get_required_information(response)
@@ -147,6 +146,10 @@ def main():
     args = parser.parse_args()
 
     results = search(args.style, args.country, args.year)
+    # Filter out master releases, these do not have ratings
+    results = [r for r in results if r['id'] != r['master_id']]
+
+    # results = results[:150]
 
     with Path('./current_run_search_results.json').open('w') as fp:
         json.dump(results, fp, indent=4)
