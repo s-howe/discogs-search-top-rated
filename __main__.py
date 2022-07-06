@@ -32,30 +32,32 @@ class DiscogsSearchTopRated(object):
         parser.add_argument('--country', type=str)
         parser.add_argument('--year', type=str)
         parser.add_argument('--min-rating', type=float, default=4.0)
-        parser.add_argument('--update-styles', type=bool, default=False)
+        parser.add_argument('--update-styles', action='store_true', default=False)
         args = parser.parse_args()
         return args
 
     def get_username(self):
-        url = f'{self.self.base_url}/oauth/identity'
+        url = f'{self.base_url}/oauth/identity'
         response = self.session.get(url).json()
         return response['username']
+
+    def paginate(self, first_page, results_key):
+        results = first_page[results_key]
+        if first_page['pagination']['pages'] > 1:
+            sleep(1)
+            current_page = first_page
+            while 'next' in current_page['pagination']['urls']:
+                next_page_url = current_page['pagination']['urls']['next']
+                current_page = self.session.get(next_page_url).json()
+                results += current_page[results_key]
+        return results
 
     def get_collection(self):
         username = self.get_username()
 
         url = f'{self.base_url}/users/{username}/collection/folders/0/releases'
         first_page = self.session.get(url).json()
-        releases = first_page['releases']
-
-        if first_page['pagination']['pages'] > 1:
-            current_page = first_page
-            while 'next' in current_page['pagination']['urls']:
-                sleep(1)
-                next_page_url = current_page['pagination']['urls']['next']
-                current_page = self.session.get(next_page_url).json()
-                releases += current_page['releases']
-
+        releases = self.paginate(first_page, 'releases')
         return releases
 
     def search(self):
@@ -69,15 +71,7 @@ class DiscogsSearchTopRated(object):
         url = f'{self.base_url}/database/search'
 
         first_page = self.session.get(url, params=params).json()
-        results = first_page['results']
-        if first_page['pagination']['pages'] > 1:
-            sleep(1)
-            current_page = first_page
-            while 'next' in current_page['pagination']['urls']:
-                next_page_url = current_page['pagination']['urls']['next']
-                current_page = self.session.get(next_page_url).json()
-                results += current_page['results']
-
+        results = self.paginate(first_page, 'results')
         return results
 
     @staticmethod
