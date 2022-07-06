@@ -87,7 +87,7 @@ class DiscogsSearchTopRated(object):
         return required_information
 
     def get_full_data(self, release_id):
-        sleep(1.5)
+        sleep(1.0)
         url = f'{self.base_url}/releases/{release_id}'
         request = self.session.get(url)
         response = request.json()
