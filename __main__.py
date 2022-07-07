@@ -1,9 +1,7 @@
 from os import getenv
 from time import sleep
 import argparse
-from pprint import pprint
 from pathlib import Path
-from urllib.error import HTTPError
 
 import requests
 
