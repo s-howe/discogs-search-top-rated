@@ -60,6 +60,8 @@ python . --update-styles
 
 The `--min-rating` argument has a default value of 4.0.
 
+To limit the highly-rated results to those without videos, pass the `--no-videos` argument.
+
 All available search arguments:
 * --query
 * --type
