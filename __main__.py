@@ -1,17 +1,36 @@
-from dotenv import load_dotenv
 from os import getenv
 from time import sleep
-from pprint import pprint
 import argparse
-import requests
+from pprint import pprint
 from pathlib import Path
-import json
 
-load_dotenv()
+import requests
+
+POSSIBLE_SEARCH_KEYS = [
+    'query',
+    'type',
+    'title',
+    'release_title',
+    'credit',
+    'artist',
+    'anv',
+    'label',
+    'genre',
+    'style',
+    'country',
+    'year',
+    'format',
+    'catno',
+    'barcode',
+    'track',
+    'submitter',
+    'contributor'
+]
 
 
 class DiscogsSearchTopRated(object):
     def __init__(self):
+        self.validate_env()
         self.base_url = 'https://api.discogs.com'
 
         self.styles_file = Path('./styles.txt')
@@ -23,16 +42,25 @@ class DiscogsSearchTopRated(object):
         self.args = self.parse_args()
         if self.args.update_styles:
             self.update_styles_file()
-        elif any(x is None for x in [self.args.style, self.args.country, self.args.year]):
-            raise ValueError('Please provide a value for all of --style, --country, --year.')
+
+    @staticmethod
+    def validate_env():
+        if getenv('DISCOGS_API_TOKEN') is None:
+            raise EnvironmentError('Please load the DISCOGS_API_TOKEN environment variable. '
+                                   'This can be generated here: https://www.discogs.com/settings/developers')
+
+    def get_search_fields(self):
+        args_dict = vars(self.args)
+
+        search_fields = {k: v for k, v in args_dict.items() if k in POSSIBLE_SEARCH_KEYS and v is not None}
+        return search_fields
 
     def parse_args(self):
         parser = argparse.ArgumentParser()
-        parser.add_argument('--style', choices=self.get_styles(), action='store', type=str)
-        parser.add_argument('--country', type=str)
-        parser.add_argument('--year', type=str)
         parser.add_argument('--min-rating', type=float, default=4.0)
         parser.add_argument('--update-styles', action='store_true', default=False)
+        for search_field in POSSIBLE_SEARCH_KEYS:
+            parser.add_argument(f'--{search_field}', required=False)
         args = parser.parse_args()
         return args
 
@@ -61,16 +89,11 @@ class DiscogsSearchTopRated(object):
         return releases
 
     def search(self):
-        params = {
-            'style': self.args.style,
-            'country': self.args.country,
-            'year': self.args.year,
-            'format': 'vinyl'
-        }
+        search_fields = self.get_search_fields()
 
         url = f'{self.base_url}/database/search'
 
-        first_page = self.session.get(url, params=params).json()
+        first_page = self.session.get(url, params=search_fields).json()
         results = self.paginate(first_page, 'results')
         return results
 
@@ -92,7 +115,6 @@ class DiscogsSearchTopRated(object):
         request = self.session.get(url)
         response = request.json()
 
-        # Verify response
         if 'message' in response:
             print(response['message'])
         else:
@@ -137,6 +159,10 @@ class DiscogsSearchTopRated(object):
         # Filter out master releases, these do not have ratings
         results = [r for r in results if r['id'] != r['master_id']]
 
+        if not len(results):
+            print('No search results. Please check your search filters.')
+            return
+
         print(f'{len(results)} results. Finding high rated ones.')
 
         release_ids = [r['id'] for r in results]
@@ -145,7 +171,9 @@ class DiscogsSearchTopRated(object):
         top_rated = [r for r in releases if r is not None and self.rating_above(r, self.args.min_rating)]
 
         top_rated = sorted(top_rated, key=self.get_rating, reverse=True)
+
         print(f'{len(top_rated)} results with high ratings:')
+
         for release in top_rated:
             print(f"{release['artists_sort']} - {release['title']} - {release['year']} - rated {self.get_rating(release)}")
             print(release['uri'])
