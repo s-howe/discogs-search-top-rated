@@ -11,7 +11,15 @@ adds a minimum rating filter to search results, narrowing them down to higher qu
 
 ## Installation
 
-Install Python and [Poetry](https://python-poetry.org/). 
+Install Python.
+
+### Via Pip
+
+Run `pip install -r requirements.txt`.
+
+### Via Poetry
+
+Install [Poetry](https://python-poetry.org/). 
 
 Run `poetry install` to install the necessary dependencies and `poetry shell` to enter
 the virtual environment.
