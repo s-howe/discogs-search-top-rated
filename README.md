@@ -3,6 +3,12 @@
 This Python project runs a search on the Discogs API and then filters the search results for those with ratings above 
 the specified minimum rating.
 
+## Motivation
+
+Discogs currently offers a fairly good search implementation in their web GUI. However, a user cannot filter by the 
+community rating of a release. Community ratings tend to be correlated with the quality of a release, so this project 
+adds a minimum rating filter to search results, narrowing them down to higher quality releases.
+
 ## Installation
 
 Install Python and [Poetry](https://python-poetry.org/). 
@@ -69,3 +75,10 @@ All available search arguments:
 Search tips:
 * The `--year` argument can take ranges e.g. `--year "1994-1999"`
 * The `--style` argument appears to search for styles containing any of the words in the given string e.g. `--style "deep tech house"` will return results with both 'deep house' and 'tech house' styles
+
+## Ideas for further development
+
+Contributions are very welcome. Current ideas:
+* --output option
+    * html - output/open a HTML file which lists the results, complete with images and release info
+    * txt - output to a text file instead of stdout
