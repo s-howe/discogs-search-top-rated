@@ -90,3 +90,4 @@ Contributions are very welcome. Current ideas:
 * --output option
     * html - output/open a HTML file which lists the results, complete with images and release info
     * txt - output to a text file instead of stdout
+* Convert to a proper CLI rather than `python . ...`
