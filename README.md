@@ -10,6 +10,12 @@ Install Python and [Poetry](https://python-poetry.org/).
 Run `poetry install` to install the necessary dependencies and `poetry shell` to enter
 the virtual environment.
 
+## Requirements
+
+Running the code requires a Discogs API token. This should be set as the `DISCOGS_API_TOKEN` environment variable.
+
+This token can be generated [here](https://www.discogs.com/settings/developers).
+
 ## Usage
 
 Example:
