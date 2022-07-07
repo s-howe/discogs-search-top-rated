@@ -87,7 +87,6 @@ class DiscogsSearchTopRated(object):
         releases = [self.get_full_release_data(id) for id in release_ids]
 
         top_rated = [r for r in releases if r is not None and self.rating_above(r, self.args.min_rating)]
-
         top_rated = sorted(top_rated, key=self.get_rating, reverse=True)
 
         print(f'{len(top_rated)} results with high ratings:')
@@ -99,9 +98,7 @@ class DiscogsSearchTopRated(object):
 
     def search(self):
         search_fields = self.get_search_fields()
-
         url = f'{self.base_url}/database/search'
-
         first_page = self.request(url, params=search_fields)
         results = self.paginate(first_page, 'results')
         return results
@@ -138,7 +135,6 @@ class DiscogsSearchTopRated(object):
 
     def get_collection(self):
         username = self.get_username()
-
         url = f'{self.base_url}/users/{username}/collection/folders/0/releases'
         first_page = self.request(url)
         releases = self.paginate(first_page, 'releases')
