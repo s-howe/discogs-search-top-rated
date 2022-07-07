@@ -37,7 +37,8 @@ https://www.discogs.com/release/1172186-Various-4-Seasons-EP-Vol-2
 ...
 ```
 
-All available countries are listed in the `countries.txt` file. Available styles are listed in the `styles.txt` file. These are generated from the author's collection. To generate a list of styles from your own collection, run
+All available countries are listed in the `countries.txt` file. Available styles are listed in the `styles.txt` file. 
+These are generated from the author's collection. To generate a list of styles from your own collection, run
 
 ``` bash
 python . --update-styles
@@ -64,3 +65,7 @@ All available search arguments:
 * --track
 * --submitter
 * --contributor
+
+Search tips:
+* The `--year` argument can take ranges e.g. `--year "1994-1999"`
+* The `--style` argument appears to search for styles containing any of the words in the given string e.g. `--style "deep tech house"` will return results with both 'deep house' and 'tech house' styles
