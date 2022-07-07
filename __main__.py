@@ -36,7 +36,7 @@ class DiscogsSearchTopRated(object):
 
         self.session = requests.Session()
         self.session.headers = {'user-agent': 'DiscogsSearchTopRated/0.1'}
-        self.session.params = {'token': getenv('DISCOGS_API_TOKEN')}
+        self.session.params = {'token': getenv('DISCOGS_API_TOKEN'), 'per_page': 100}
 
         self.args = self.parse_args()
         if self.args.update_styles:
