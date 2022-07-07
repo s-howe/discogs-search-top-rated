@@ -51,6 +51,9 @@ class DiscogsSearchTopRated(object):
         parser.add_argument('--min-rating', type=float, default=4.0,
                             help='Filters search results for those with ratings above this value.')
 
+        parser.add_argument('--no-videos', action='store_true', default=False,
+                            help='Removes releases with videos from results.')
+
         parser.add_argument('--update-styles', action='store_true', default=False,
                             help='Updates styles.txt with styles from your own collection.')
 
@@ -90,12 +93,16 @@ class DiscogsSearchTopRated(object):
         release_ids = [r['id'] for r in results]
         releases = [self.get_full_release_data(id) for id in release_ids]
 
-        top_rated = [r for r in releases if r is not None and self.rating_above(r, self.args.min_rating)]
-        top_rated = sorted(top_rated, key=self.get_rating, reverse=True)
+        filtered_releases = [r for r in releases if r is not None and self.rating_above(r, self.args.min_rating)]
+        filtered_releases = sorted(filtered_releases, key=self.get_rating, reverse=True)
 
-        print(f'{len(top_rated)} results with high ratings:')
+        print(f'{len(filtered_releases)} results with high ratings.')
 
-        for release in top_rated:
+        if self.args.no_videos:
+            filtered_releases = [r for r in filtered_releases if not self.has_videos(r)]
+            print(f'{len(filtered_releases)} results with no videos.')
+
+        for release in filtered_releases:
             print(f"\n{release['artists_sort']} - {release['title']} - {release['country']} - "
                   f"{release['year']} - rated {self.get_rating(release)}")
             print(release['uri'])
@@ -123,6 +130,10 @@ class DiscogsSearchTopRated(object):
     def rating_above(self, release, min_rating):
         rating = self.get_rating(release)
         return rating >= min_rating if rating else False
+
+    @staticmethod
+    def has_videos(release):
+        return 'videos' in release and len(release['videos'])
 
     @staticmethod
     def get_rating(release):
