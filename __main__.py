@@ -39,8 +39,6 @@ class DiscogsSearchTopRated(object):
         self.session.params = {'token': getenv('DISCOGS_API_TOKEN'), 'per_page': 100}
 
         self.args = self.parse_args()
-        if self.args.update_styles:
-            self.update_styles_file()
 
     @staticmethod
     def validate_env():
@@ -62,17 +60,23 @@ class DiscogsSearchTopRated(object):
         args = parser.parse_args()
         return args
 
-    def request(self, url, params=None):
-        if params:
-            response = self.session.get(url, params=params)
+    def request(self, url, params=None, paginating=False):
+        if paginating:
+            # Session-level params are already present in URLs when paginating
+            response = self.session.get(url, params={'token': None, 'per_page': None})
         else:
-            response = self.session.get(url)
+            response = self.session.get(url, params=params)
+
         try:
             return response.json()
         except requests.JSONDecodeError:
             raise ValueError(f'{url}\n{response.text}')
 
     def run(self):
+        if self.args.update_styles:
+            self.update_styles_file()
+            return
+
         results = self.search()
         # Filter out master releases, these do not have ratings
         results = [r for r in results if r['id'] != r['master_id']]
@@ -164,7 +168,7 @@ class DiscogsSearchTopRated(object):
             current_page = first_page
             while 'next' in current_page['pagination']['urls']:
                 next_page_url = current_page['pagination']['urls']['next']
-                current_page = self.request(next_page_url)
+                current_page = self.request(next_page_url, paginating=True)
                 results += current_page[results_key]
         return results
 
