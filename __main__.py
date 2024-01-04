@@ -83,17 +83,13 @@ class DiscogsSearchTopRated:
         results = [r for r in results if r["id"] != r["master_id"]]
 
         release_ids = [r["id"] for r in results]
-        releases = [self.get_full_release_data(id) for id in release_ids]
+        releases = [self.get_full_release(id) for id in release_ids]
 
-        filtered_releases = [
-            r for r in releases if r is not None and self.rating_above(r, min_rating)
-        ]
-        filtered_releases = sorted(filtered_releases, key=self.get_rating, reverse=True)
-
+        filtered_releases = [r for r in releases if r.rating > min_rating]
         print(f"{len(filtered_releases)} results with high ratings.")
 
         if no_videos:
-            filtered_releases = [r for r in filtered_releases if not self.has_videos(r)]
+            filtered_releases = [r for r in filtered_releases if not r.has_videos]
             print(f"{len(filtered_releases)} results with no videos.")
 
         return filtered_releases
@@ -101,11 +97,7 @@ class DiscogsSearchTopRated:
     def output_results(self, filtered_releases: list[dict]) -> None:
         """Outputs the results to the console."""
         for release in filtered_releases:
-            print(
-                f"\n{release['artists_sort']} - {release['title']} - {release['country']} - "
-                f"{release['year']} - rated {self.get_rating(release)}"
-            )
-            print(release["uri"])
+            print(f"\n{release}\n{release.data['uri']}")
 
     def request(
         self, url: str, params: dict[str, str] = None, paginating: bool = False
@@ -130,29 +122,14 @@ class DiscogsSearchTopRated:
         except requests.JSONDecodeError:
             raise ValueError(f"{url}\n{response.text}")
 
-    def get_full_release_data(self, release_id: str) -> dict:
+    def get_full_release(self, release_id: str) -> "Release":
         """Gets the full release data for a release. This provides more data than is
         given by the basic Discogs API search results e.g. ratings and videos."""
         # Discogs API rate limits at 60 requests per minute.
         sleep(1)
         url = f"{self.base_url}/releases/{release_id}"
-        release = self.request(url)
-        return release
-
-    def rating_above(self, release: dict, min_rating: float) -> bool:
-        rating = self.get_rating(release)
-        return rating >= min_rating if rating else False
-
-    @staticmethod
-    def has_videos(release: dict) -> None:
-        return "videos" in release and len(release["videos"])
-
-    @staticmethod
-    def get_rating(release: dict) -> float:
-        if "community" in release:
-            return release["community"]["rating"]["average"]
-        else:
-            return None
+        release_data = self.request(url)
+        return Release(release_data)
 
     def update_styles_file(self) -> None:
         """Updates the stored styles file with all the styles from the user's own
@@ -201,6 +178,31 @@ class DiscogsSearchTopRated:
                 current_page = self.request(next_page_url, paginating=True)
                 results += current_page[results_key]
         return results
+
+
+class Release:
+    def __init__(self, data) -> None:
+        self.data = data
+
+    def __str__(self) -> str:
+        return f"{self.artist} - {self.data['title']} - {self.data['country']} - {self.data['year']} - rated {self.rating}"
+
+    @property
+    def artist(self) -> str:
+        return self.data["artists"][0]["name"]
+
+    @property
+    @property
+    def has_videos(self) -> bool:
+        return "videos" in self.data and len(self.data["videos"])
+
+    @property
+    def rating(self) -> float:
+        if "community" in self.data:
+            return self.data["community"]["rating"]["average"]
+        else:
+            # Master releases do not have ratings
+            return None
 
 
 def main():
