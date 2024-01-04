@@ -192,7 +192,6 @@ class Release:
         return self.data["artists"][0]["name"]
 
     @property
-    @property
     def has_videos(self) -> bool:
         return "videos" in self.data and len(self.data["videos"])
 
