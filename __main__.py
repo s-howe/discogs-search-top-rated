@@ -79,10 +79,13 @@ class DiscogsSearchTopRated:
     ) -> list[dict]:
         """Filters search results for extra criteria that cannot be included in a
         basic Discogs API search request."""
-        # Filter out master releases, these do not have ratings
-        results = [r for r in results if r["id"] != r["master_id"]]
+        release_ids = [
+            r["id"]
+            for r in results
+            # Filter out master releases, these do not have ratings
+            if r["id"] != r["master_id"]
+        ]
 
-        release_ids = [r["id"] for r in results]
         releases = [self.get_full_release(id) for id in release_ids]
 
         filtered_releases = [r for r in releases if r.rating > min_rating]
