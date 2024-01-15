@@ -11,24 +11,40 @@ adds a minimum rating filter to search results, narrowing them down to higher qu
 
 ## Installation
 
-Install Python.
+### Prerequisites
 
-### Via Pip
+**Python**: This project requires Python 3.6 or higher.
+If you don't have Python installed, download and install it from [python.org](https://www.python.org/downloads/).
 
-Run `pip install -r requirements.txt`.
+### Steps
 
-### Via Poetry
+1. Clone the repository
+``` bash
+git clone https://github.com/s-howe/discogs-search-top-rated
+cd discogs-search-top-rated
+```
 
-Install [Poetry](https://python-poetry.org/). 
+2. (Optional) Set up a virtual environment
+``` bash
+python -m venv venv
+source venv/bin/activate
+```
 
-Run `poetry install` to install the necessary dependencies and `poetry shell` to enter
-the virtual environment.
+3. Install the required packages
+``` bash
+pip install -r requirements.txt
+```
 
-## Requirements
+## Setting environment variables
 
 Running the code requires a Discogs API token. This should be set as the `DISCOGS_API_TOKEN` environment variable.
 
 This token can be generated [here](https://www.discogs.com/settings/developers).
+
+Set the environment variable in your shell before running the code:
+``` bash
+export DISCOGS_API_TOKEN=your_token_here
+```
 
 ## Usage
 
